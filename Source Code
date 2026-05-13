@@ -1,0 +1,227 @@
+
+# Import Required Libraries
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Dense, Flatten, Dropout
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
+
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+
+
+# Dataset Path
+
+train_dir = "/content/dataset/train"
+validation_dir = "/content/dataset/validation"
+test_dir = "/content/dataset/test"
+
+# Image Preprocessing
+
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=20,
+    zoom_range=0.2,
+    horizontal_flip=True
+)
+
+validation_datagen = ImageDataGenerator(rescale=1./255)
+
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(128, 128),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+validation_generator = validation_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(128, 128),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=(128, 128),
+    batch_size=32,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# CNN Model Architecture
+
+model = Sequential()
+
+# First Convolution Layer
+model.add(Conv2D(32, (3,3), activation='relu', input_shape=(128,128,3)))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+# Second Convolution Layer
+model.add(Conv2D(64, (3,3), activation='relu'))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+# Third Convolution Layer
+model.add(Conv2D(128, (3,3), activation='relu'))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+# Fourth Convolution Layer
+model.add(Conv2D(256, (3,3), activation='relu'))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+# Flatten Layer
+model.add(Flatten())
+
+# Fully Connected Dense Layers
+model.add(Dense(256, activation='relu'))
+model.add(Dropout(0.5))
+
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.3))
+
+# Output Layer
+model.add(Dense(4, activation='softmax'))
+
+
+# Compile Model
+
+model.compile(
+    optimizer=Adam(learning_rate=0.001),
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+# Model Summary
+
+model.summary()
+
+# Early Stopping
+
+early_stop = EarlyStopping(
+    monitor='val_loss',
+    patience=5,
+    restore_best_weights=True
+)
+
+# Train CNN Model
+
+history = model.fit(
+    train_generator,
+    validation_data=validation_generator,
+    epochs=25,
+    callbacks=[early_stop]
+)
+
+# Model Evaluation
+
+loss, accuracy = model.evaluate(test_generator)
+
+print("Test Loss:", loss)
+print("Test Accuracy:", accuracy)
+
+# Predictions
+
+
+predictions = model.predict(test_generator)
+predicted_classes = np.argmax(predictions, axis=1)
+
+true_classes = test_generator.classes
+class_labels = list(test_generator.class_indices.keys())
+
+# Classification Report
+
+report = classification_report(
+    true_classes,
+    predicted_classes,
+    target_names=class_labels
+)
+
+print(report)
+
+# Confusion Matrix
+
+
+cm = confusion_matrix(true_classes, predicted_classes)
+
+plt.figure(figsize=(8,6))
+
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt='d',
+    cmap='Blues',
+    xticklabels=class_labels,
+    yticklabels=class_labels
+)
+
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted Label")
+plt.ylabel("True Label")
+plt.show()
+
+# Training Accuracy Graph
+
+plt.figure(figsize=(8,6))
+
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+# Training Loss Graph
+
+plt.figure(figsize=(8,6))
+
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+
+plt.title('Training and Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# Save Trained Model
+
+model.save("blood_cell_classification_model.h5")
+
+print("Model Saved Successfully")
+
+# Predict Single Image
+
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+
+loaded_model = load_model("blood_cell_classification_model.h5")
+
+img_path = "/content/sample_image.jpg"
+
+img = image.load_img(img_path, target_size=(128,128))
+img_array = image.img_to_array(img)
+img_array = img_array / 255.0
+img_array = np.expand_dims(img_array, axis=0)
+
+prediction = loaded_model.predict(img_array)
+predicted_class = class_labels[np.argmax(prediction)]
+
+print("Predicted Blood Cell Class:", predicted_class)
+
