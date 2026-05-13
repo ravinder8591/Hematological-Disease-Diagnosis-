@@ -1,0 +1,70 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Dataset folders
+dataset/
+data/
+*.csv
+*.zip
+
+# Model files
+*.h5
+*.keras
+*.ckpt
+*.pth
+*.pt
+
+# TensorFlow logs
+logs/
+tensorboard_logs/
+
+# Output files
+outputs/
+results/
+predictions/
+
+# Images generated during training
+*.png
+*.jpg
+*.jpeg
+
+# Matplotlib cache
+.matplotlib/
+
+# VS Code settings
+.vscode/
+
+# PyCharm files
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# Temporary files
+*.tmp
+*.log
+
+# Build files
+build/
+dist/
+
+# PDF and Word outputs (optional)
+*.pdf
+*.docx
+
+# Google Colab files
+*.ipynb
