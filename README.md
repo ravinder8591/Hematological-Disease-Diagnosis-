@@ -2,9 +2,9 @@
 
 ## 👨‍🎓 Authors
 
-- **Ravinder Singh** (ID: 2210991944)  
-- **Rishav Nath Kaura** (ID: 2210991796)  
-- **Rajat Chauhan** (ID: 2210990585)  
+- **Ravinder Singh** (ID: 2210992144)  
+- **Rishav Nath Kaura** (ID: 2210992160)  
+- **Rajat Chauhan** (ID: 2210992131)  
 
 Department of Computer Science and Engineering  
 Chitkara University Institute of Engineering and Technology  
